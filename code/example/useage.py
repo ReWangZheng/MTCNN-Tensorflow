@@ -18,7 +18,30 @@ def example2():
         print(sess.run(res))
         print(sess.run(res2))
 
+# how to use the tensorflow queue
+def example3():
+    q = tf.FIFOQueue(2,"int32")
+    init = q.enqueue_many(([1,2],))
+    x = q.dequeue()
+    y = x + 1
+    q_inc = q.enqueue([y])
+    with tf.Session() as sess:
+        sess.run(init)
+        while 1:
+            v,_= sess.run([x,q_inc])
+            print(v)
 
+# how to use threading
 
+def example4():
+    import numpy as np
+    def run(coord,id):
+        while not coord.should_stop():
+            print(id)
+    import threading
+    c=tf.train.Coordinator()
+    ts = [threading.Thread(target=run,args=(c,i)) for i in range(0,5)]
+    for t in ts:t.start()
+    c.join(ts)
 if __name__ == '__main__':
-    example2()
+    example4()

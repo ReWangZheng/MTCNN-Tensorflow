@@ -40,7 +40,6 @@ def read_fddb_base():
                     idx += 1
                 fddb_info.append((filename, face_size, face_box))
     return fddb_info
-
 def make():
     Data.init_dir()
     def random_offset():
@@ -59,8 +58,11 @@ def make():
         sign = [(1,1),(1,-1),()]
         for idx,ground_truth in enumerate(ground_truths):
             x_p,y_p,w_p,h_p = np.array(ground_truth,int)
-            positive_face.append(image[y_p:y_p+h_p,x_p:x_p+w_p])
-            part_face.append(image[y_p:y_p+h_p,x_p:x_p+w_p])
+            true_img = image[y_p:y_p+h_p,x_p:x_p+w_p]
+            positive_face.append(cv2.flip(true_img, 1))
+            positive_face.append(cv2.flip(true_img, 0))
+            positive_face.append(cv2.flip(true_img, -1))
+            part_face.append(true_img)
             part_face_bound.append([0, 0, 1,1])
             # create part img
             for i in range(1,6):
@@ -70,10 +72,10 @@ def make():
                 w_of = min(int(w_p * w_t),w_p)
                 h_of = min(int(h_p * h_t),h_p)
                 part_face.append(image[y_of:y_of+h_of,x_of:x_of+w_of])
-                part_face_bound.append([-x_t,-y_t,1/w_p,1/h_p])
+                part_face_bound.append([-x_t,-y_t,1/w_t,1/h_t])
         # create neg img
         save = True
-        for i in range(50):
+        for i in range(12):
             x_n = np.random.randint(0, w-48)
             y_n = np.random.randint(0, h-48)
             w_n = np.random.randint(48, w-x_n)
@@ -91,21 +93,20 @@ def make():
             save=True
         return positive_face,(part_face,part_face_bound),negtive_face
     data_infomation = read_fddb_base()
-    save_dir = Data.FDDB_MAKE_SAVE
+    save_dir = Data.MAKE_SAVE
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     parts_img = []
     parts_label = []
     idx = 0
-    f = open(os.path.join(Data.FDDB_MAKE_SAVE,'part_info.txt'),mode='a')
-
+    f = open(os.path.join(Data.MAKE_SAVE,'part_info.txt'),mode='w')
     for item_info in tqdm(data_infomation,file=sys.stdout,desc='Making neg/pos Set '):
         img_path,face_number,boxs = item_info
         img_origin = cv2.imread(img_path)
         pos,part,neg = extract(img_origin,boxs)
-        Data.save_images(neg,os.path.join(Data.FDDB_MAKE_SAVE,Data.NEG_DIR))
-        Data.save_images(pos,os.path.join(Data.FDDB_MAKE_SAVE,Data.POS_DIR))
-        names = Data.save_images(part[0], os.path.join(Data.FDDB_MAKE_SAVE, Data.PART_DIR))
+        Data.save_images(neg,os.path.join(Data.MAKE_SAVE,Data.NEG_DIR))
+        Data.save_images(pos,os.path.join(Data.MAKE_SAVE,Data.POS_DIR))
+        names = Data.save_images(part[0], os.path.join(Data.MAKE_SAVE, Data.PART_DIR))
         for name,t in zip(names,part[1]):
             f.write('{}\n{} {} {} {}\n'.format(name,t[0],t[1],t[2],t[3]))
     f.close()

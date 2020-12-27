@@ -20,4 +20,6 @@ def init_dir():
 
 """CONFIG END"""
 
+"""CONFIG AFLW"""
 AFLW_DIR='/home/dataset/AFLW/'
+AFLW_SQLIT='/home/dataset/AFLW/alfw/'

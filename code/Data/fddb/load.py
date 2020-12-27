@@ -23,9 +23,9 @@ class ImageDateSet:
         self.data_train,self.data_test = train_test_split(self.data_info)
         # make Dataset
 
-        self.dataset_train = Dataset.from_tensor_slices(self.conver(self.data_train)).shuffle(500).map(self.load_img,num_parallel_calls=4).cache()
+        self.dataset_train = Dataset.from_tensor_slices(self.conver(self.data_train)).shuffle(200).map(self.load_img,num_parallel_calls=4).cache()
         self.dataset_train = self.dataset_train.batch(self.batch).repeat().prefetch(200)
-        self.dataset_test = Dataset.from_tensor_slices(self.conver(self.data_test)).shuffle(500).map(self.load_img,num_parallel_calls=4).cache()
+        self.dataset_test = Dataset.from_tensor_slices(self.conver(self.data_test)).shuffle(200).map(self.load_img,num_parallel_calls=4).cache()
         self.dataset_test = self.dataset_test.batch(self.batch).repeat().prefetch(200)
     def getIterator(self):
         iter_train = self.dataset_train.make_initializable_iterator()
@@ -96,6 +96,9 @@ class BoundDataset:
         # resize the image
         resized_image = tf.image.resize_images(img_decoded, [self.img_size[0], self.img_size[1]])
         return resized_image,label
+
+
+
 def test_imagedata():
     ds = ImageDateSet(negative_dir='/home/dataset/FDDB/MTCNN_USED_DATA/negtive_face',positive_dir='/home/dataset/FDDB/MTCNN_USED_DATA/positive_face')
     train_op,element_train,test_op,element_test=ds.getIterator()
@@ -103,7 +106,7 @@ def test_imagedata():
     sess.run(train_op)
     print(sess.run(element_train))
 def test_bounds():
-    bd = BoundDataset(info='/home/dataset/FDDB/MTCNN_USED_DATA/part_info.txt')
+    bd = BoundDataset(info='/home/dataset/FDwwwoainima..DB/MTCNN_USED_DATA/part_info.txt')
     train_op, element_train, test_op, element_test = bd.getIterator()
     sess = tf.Session()
     sess.run(train_op)

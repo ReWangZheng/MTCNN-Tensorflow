@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import sys
 from tqdm import tqdm
 import random
+from util import save_images
 data_info = \
     ['FDDB-fold-05-ellipseList.txt',
      'FDDB-fold-01-ellipseList.txt',
@@ -104,9 +105,9 @@ def make():
         img_path,face_number,boxs = item_info
         img_origin = cv2.imread(img_path)
         pos,part,neg = extract(img_origin,boxs)
-        Data.save_images(neg,os.path.join(Data.MAKE_SAVE,Data.NEG_DIR))
-        Data.save_images(pos,os.path.join(Data.MAKE_SAVE,Data.POS_DIR))
-        names = Data.save_images(part[0], os.path.join(Data.MAKE_SAVE, Data.PART_DIR))
+        save_images(neg,os.path.join(Data.MAKE_SAVE,Data.NEG_DIR))
+        save_images(pos,os.path.join(Data.MAKE_SAVE,Data.POS_DIR))
+        names = save_images(part[0], os.path.join(Data.MAKE_SAVE, Data.PART_DIR))
         for name,t in zip(names,part[1]):
             f.write('{}\n{} {} {} {}\n'.format(name,t[0],t[1],t[2],t[3]))
     f.close()

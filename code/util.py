@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import tensorflow as tf
 def drwa_bbox(img_origin,bbox,color=(255,0,0)):
     img = np.copy(img_origin)
     for box in bbox:
@@ -74,3 +75,19 @@ def overlap(box1,box2):
     box1_iou = in_area / float(box1_area)
     box2_iou = in_area / float(box2_area)
     return iou,box1_iou,box2_iou
+def save_images(imgs,save_dir,names=None):
+    import cv2
+    import os
+    from uuid import uuid4
+    if names is None:
+        names = [os.path.join(save_dir,'{}.jpg'.format(uuid4())) for i in range(0,len(imgs))]
+    for i in range(0,len(imgs)):
+        cv2.imwrite(names[i],imgs[i])
+    return names
+
+def _int64_feature(value):
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
+def _float_feature(value):
+    return tf.train.Feature(float_list=tf.train.FloatList(value=value))
+def _byte_feature(value):
+    return tf.train.Feature(bytes_list=tf.train.BytesList(value=value))

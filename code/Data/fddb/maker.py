@@ -1,12 +1,17 @@
-import Data
 import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
 import sys
 from tqdm import tqdm
 import random
-from util import save_images
+from util import *
+"""
+FDDB CONFIG
+"""
+FDDB_DIR='/home/dataset/FDDB/'
+FDDB_DIR_FOLDS=FDDB_DIR+'/FDDB-folds/'
+MAKE_SAVE='/home/dataset/FDDB/MTCNN_USED_DATA/'
+POS_DIR = 'positive_face'
+NEG_DIR = 'negtive_face'
+PART_DIR = 'part_face'
 data_info = \
     ['FDDB-fold-05-ellipseList.txt',
      'FDDB-fold-01-ellipseList.txt',
@@ -18,15 +23,24 @@ data_info = \
      'FDDB-fold-10-ellipseList.txt',
      'FDDB-fold-07-ellipseList.txt',
      'FDDB-fold-08-ellipseList.txt']
+"""CONFIG END"""
+def init_dir():
+    import os
+    if not os.path.exists(os.path.join(MAKE_SAVE,POS_DIR)):
+        os.makedirs(os.path.join(MAKE_SAVE,POS_DIR))
+    if not os.path.exists(os.path.join(MAKE_SAVE, NEG_DIR)):
+        os.makedirs(os.path.join(MAKE_SAVE, NEG_DIR))
+    if not os.path.exists(os.path.join(MAKE_SAVE, PART_DIR)):
+        os.makedirs(os.path.join(MAKE_SAVE, PART_DIR))
 def read_fddb_base():
     fddb_info = []
     for txt in data_info:
-        file = os.path.join(Data.FDDB_DIR_FOLDS, txt)
+        file = os.path.join(FDDB_DIR_FOLDS, txt)
         with open(file) as f:
             mes_list = [mes.strip() for mes in f.readlines()]
             idx = 0
             while idx < len(mes_list):
-                filename = os.path.join(Data.FDDB_DIR, mes_list[idx] + '.jpg')
+                filename = os.path.join(FDDB_DIR, mes_list[idx] + '.jpg')
                 idx += 1
                 face_size = int(mes_list[idx])
                 idx += 1
@@ -42,7 +56,7 @@ def read_fddb_base():
                 fddb_info.append((filename, face_size, face_box))
     return fddb_info
 def make():
-    Data.init_dir()
+    init_dir()
     def random_offset():
         x_t = (np.random.rand() % 0.5) * random.sample([-1, 1], 1)[0]
         y_t = (np.random.rand() % 0.5) * random.sample([-1, 1], 1)[0]
@@ -84,8 +98,7 @@ def make():
             if w_n==0 or h_n==0:
                 continue
             for true_box in ground_truths:
-                _,_,iou=Data.overlap(true_box,[x_n,y_n,w_n,h_n])
-                true_box = np.array(true_box,int)
+                _,_,iou=overlap(true_box,[x_n,y_n,w_n,h_n])
                 if iou>0.4:
                     save = False
                     break
@@ -94,22 +107,21 @@ def make():
             save=True
         return positive_face,(part_face,part_face_bound),negtive_face
     data_infomation = read_fddb_base()
-    save_dir = Data.MAKE_SAVE
+    save_dir = MAKE_SAVE
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     parts_img = []
     parts_label = []
     idx = 0
-    f = open(os.path.join(Data.MAKE_SAVE,'part_info.txt'),mode='w')
+    f = open(os.path.join(MAKE_SAVE,'part_info.txt'),mode='w')
     for item_info in tqdm(data_infomation,file=sys.stdout,desc='Making neg/pos Set '):
         img_path,face_number,boxs = item_info
         img_origin = cv2.imread(img_path)
         pos,part,neg = extract(img_origin,boxs)
-        save_images(neg,os.path.join(Data.MAKE_SAVE,Data.NEG_DIR))
-        save_images(pos,os.path.join(Data.MAKE_SAVE,Data.POS_DIR))
-        names = save_images(part[0], os.path.join(Data.MAKE_SAVE, Data.PART_DIR))
+        save_images(neg,os.path.join(MAKE_SAVE,NEG_DIR))
+        save_images(pos,os.path.join(MAKE_SAVE,POS_DIR))
+        names = save_images(part[0], os.path.join(MAKE_SAVE, PART_DIR))
         for name,t in zip(names,part[1]):
             f.write('{}\n{} {} {} {}\n'.format(name,t[0],t[1],t[2],t[3]))
-    f.close()
 if __name__ == '__main__':
     make()
